@@ -1,0 +1,20 @@
+package org.dam.search.backend.application.dtos.response;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.SuperBuilder;
+
+@Getter
+@Setter
+@SuperBuilder
+@NoArgsConstructor
+@AllArgsConstructor
+public class BaseResponse<T> {
+    T data;
+    String message;
+
+    public BaseResponse(T data) {
+    }
+}
