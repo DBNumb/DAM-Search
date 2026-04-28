@@ -10,5 +10,5 @@ import org.springframework.data.repository.NoRepositoryBean;
  * are not instantiated directly.
  */
 @NoRepositoryBean
-public interface BaseRepository<T extends BaseIdObject> extends JpaRepository<T, Integer> {
+public interface BaseRepository<T extends BaseIdObject,ID> extends JpaRepository<T, ID> {
 }

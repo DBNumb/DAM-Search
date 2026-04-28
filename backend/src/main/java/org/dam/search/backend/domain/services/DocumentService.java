@@ -5,7 +5,7 @@ import org.dam.search.backend.domain.repository.DocumentRepository;
 import org.springframework.stereotype.Service;
 
 @Service
-public class DocumentService extends BaseService<Document> {
+public class DocumentService extends BaseCRUDService<Document, Long> {
 
     public DocumentService(DocumentRepository repository) {
         super(repository);

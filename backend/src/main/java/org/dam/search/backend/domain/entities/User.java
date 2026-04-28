@@ -12,7 +12,17 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
-public class User implements BaseIdObject{
+public class User implements BaseIdObject<Long>{
     @Id
-    Integer id;
+    Long id;
+
+    @Override
+    public Long getId() {
+        return id;
+    }
+
+    @Override
+    public void setId(Long id) {
+        this.id = id;
+    }
 }
