@@ -1,14 +1,14 @@
 package org.dam.search.backend.application.rest;
 
 import org.dam.search.backend.domain.entities.BaseIdObject;
-import org.dam.search.backend.domain.services.BaseService;
+import org.dam.search.backend.domain.services.BaseCRUDService;
 import org.springframework.http.ResponseEntity;
 
 
-public class BaseCrudController<T extends BaseIdObject> {
-    BaseService<T> service;
+public class BaseCrudController<T extends BaseIdObject, ID> {
+    BaseCRUDService<T, ID> service;
 
-    public BaseCrudController(BaseService<T> service) {
+    public BaseCrudController(BaseCRUDService<T, ID> service) {
         this.service = service;
     }
 
@@ -17,7 +17,7 @@ public class BaseCrudController<T extends BaseIdObject> {
         return ResponseEntity.ok(savedObject);
     }
 
-    public ResponseEntity<T> get(Integer id) {
+    public ResponseEntity<T> get(ID id) {
         T object = service.findById(id);
         return ResponseEntity.ok(object);
     }
@@ -27,7 +27,7 @@ public class BaseCrudController<T extends BaseIdObject> {
         return ResponseEntity.ok(updatedObject);
     }
 
-    public ResponseEntity<T> delete(Integer id) {
+    public ResponseEntity<T> delete(ID id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }

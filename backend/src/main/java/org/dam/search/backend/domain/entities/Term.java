@@ -1,27 +1,26 @@
 package org.dam.search.backend.domain.entities;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
-import org.dam.search.backend.domain.enums.DocumentType;
 
 @Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
-public class Document implements BaseIdObject<Long>{
+public class Term implements BaseIdObject<Long>{
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
-    String tittle;
+    @Column(nullable = false)
+    String term;
 
-    String content;
-
-    DocumentType type;
+    @Column(nullable = false)
+    int docFrecuency;
 
     @Override
     public Long getId() {

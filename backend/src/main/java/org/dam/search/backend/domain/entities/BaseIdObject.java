@@ -5,7 +5,7 @@ import lombok.Data;
 
 
 
-public interface BaseIdObject {
-    public Integer getId();
-    public void setId(Integer id);
+public interface BaseIdObject<T> {
+    public T getId();
+    public void setId(T id);
 }
