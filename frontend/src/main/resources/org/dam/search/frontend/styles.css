@@ -1,0 +1,254 @@
+.root {
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 13px;
+}
+
+.topbar {
+    -fx-background-color: rgba(255,255,255,0.03);
+    -fx-border-color: rgba(255,255,255,0.06);
+    /* Borde arriba y abajo; grosor = (borde anterior)/2 */
+    -fx-border-width: 0.5 0 0.5 0;
+}
+
+.app-root {
+    /* Fondo de la aplicación: RGB(36, 40, 48) */
+    -fx-background-color: #242830;
+}
+
+.side-pane, .center-pane {
+    -fx-background-color: rgba(255,255,255,0.035);
+    -fx-border-color: rgba(255,255,255,0.07);
+    /* Sin borde inferior para quitar la línea negra del final */
+    -fx-border-width: 1 1 0 1;
+    -fx-background-radius: 0;
+    -fx-border-radius: 0;
+}
+
+/* Listas yx scroll: sin redondeo (para que se vea “cuadrado”) */
+.list-view,
+.list-view .virtual-flow,
+.list-view .virtual-flow .clipped-container,
+.list-view .virtual-flow .clipped-container .sheet,
+.scroll-pane,
+.scroll-pane > .viewport {
+    -fx-background-radius: 0;
+    -fx-border-radius: 0;
+}
+
+.list-view {
+    /* Quita el “marco” interno del ListView */
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+}
+
+.list-cell {
+    -fx-background-radius: 0;
+    -fx-border-radius: 0;
+    -fx-padding: 0;
+}
+
+.list-view:focused,
+.list-view:focus-within {
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+}
+
+.list-view .virtual-flow,
+.list-view .virtual-flow .clipped-container,
+.list-view .virtual-flow .clipped-container .sheet {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+}
+
+/* Botones por defecto: RGB(48, 52, 63) */
+.button {
+    -fx-background-color: #30343f;
+    -fx-text-fill: rgba(255,255,255,0.92);
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-border-color: rgba(255,255,255,0.10);
+    -fx-border-width: 1;
+    -fx-padding: 6 12 6 12;
+}
+
+.button:hover {
+    -fx-background-color: #3a3f4c;
+    -fx-border-color: rgba(255,255,255,0.16);
+}
+
+.button:pressed {
+    -fx-background-color: #2a2e37;
+}
+
+/* Botón primario (el "Buscar" tiene styleClass="primary") */
+.button.primary {
+    -fx-background-color: #3b82f6;
+    -fx-text-fill: white;
+    -fx-border-color: rgba(255,255,255,0.0);
+}
+
+.button.primary:hover {
+    -fx-background-color: #2563eb;
+}
+
+.button.primary:pressed {
+    -fx-background-color: #1d4ed8;
+}
+
+/* Controles de entrada (barra de búsqueda, selector y vista previa) */
+.text-field,
+.text-area,
+.combo-box-base,
+.combo-box-base .list-cell {
+    -fx-background-color: #242830; /* RGB(36,40,48) */
+    -fx-text-fill: rgba(255,255,255,0.92);
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-border-color: rgba(255,255,255,0.10);
+    -fx-border-width: 1;
+    -fx-font-size: 13px;
+}
+
+.text-field {
+    -fx-prompt-text-fill: rgba(255,255,255,0.55);
+    -fx-pref-height: 36px;
+    -fx-min-height: 36px;
+    -fx-max-height: 36px;
+}
+
+/* Igualar altura del ComboBox con la barra de búsqueda */
+.combo-box-base {
+    -fx-pref-height: 36px;
+    -fx-min-height: 36px;
+    -fx-max-height: 36px;
+}
+
+.combo-box-base .list-cell {
+    -fx-padding: 0 10 0 10;
+}
+
+.text-area .content {
+    -fx-background-color: #242830; /* asegura el interior del TextArea */
+    -fx-background-radius: 10;
+}
+
+.combo-box-base:hover,
+.text-field:hover,
+.text-area:hover {
+    -fx-border-color: rgba(255,255,255,0.16);
+}
+
+.combo-box-base:focused,
+.text-field:focused,
+.text-area:focused {
+    -fx-border-color: rgba(59,130,246,0.65); /* azul suave en focus */
+    -fx-faint-focus-color: transparent;
+    -fx-focus-color: transparent;
+}
+
+/* Dropdown del ComboBox */
+.combo-box-popup .list-view {
+    -fx-background-color: #242830;
+    -fx-border-color: rgba(255,255,255,0.10);
+}
+
+.combo-box-popup .list-view .list-cell {
+    -fx-background-color: #242830;
+    -fx-text-fill: rgba(255,255,255,0.92);
+}
+
+.combo-box-popup .list-view .list-cell:hover {
+    -fx-background-color: #2c3140;
+}
+
+.combo-box-popup .list-view .list-cell:selected {
+    -fx-background-color: #3b82f6;
+    -fx-text-fill: white;
+}
+
+.footer {
+    /* Sin “barra” inferior */
+    -fx-border-width: 0;
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+    -fx-min-height: 0;
+    -fx-pref-height: 0;
+}
+
+.status {
+    -fx-opacity: 0.85;
+}
+
+.title {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+}
+
+.section {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+
+.table-view .column-header-background {
+    -fx-background-color: #f3f5f7;
+}
+
+.card {
+    /* Cards cuadradas como la referencia */
+    -fx-background-radius: 0;
+    -fx-border-radius: 0;
+    -fx-background-color: rgba(255,255,255,0.03);
+    -fx-border-color: rgba(255,255,255,0.08);
+    -fx-border-width: 0 0 1 0;
+}
+
+.card:hover {
+    -fx-background-color: rgba(255,255,255,0.06);
+    -fx-border-color: rgba(255,255,255,0.12);
+}
+
+.card-title {
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+}
+
+.card-subtitle {
+    -fx-opacity: 0.75;
+}
+
+.card-snippet {
+    -fx-opacity: 0.9;
+}
+
+.badge {
+    -fx-padding: 2 8 2 8;
+    -fx-background-radius: 999;
+    -fx-background-color: rgba(0,0,0,0.22);
+    -fx-font-size: 11px;
+}
+
+.file-icon {
+    -fx-scale-x: 1.2;
+    -fx-scale-y: 1.2;
+}
+
+.file-icon-pdf {
+    -fx-fill: #e44b4b;
+}
+
+.file-icon-docx {
+    -fx-fill: #3b82f6;
+}
+
+.file-icon-txt {
+    -fx-fill: #9ca3af;
+}
+
+.file-icon-other {
+    -fx-fill: #a78bfa;
+}
+

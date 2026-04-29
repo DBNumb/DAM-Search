@@ -1,12 +1,12 @@
 package org.dam.search.backend.domain.entities;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
-import org.dam.search.backend.domain.enums.DocumentType;
+
+import java.time.Instant;
 
 @Entity
 @Data
@@ -15,13 +15,39 @@ import org.dam.search.backend.domain.enums.DocumentType;
 @SuperBuilder
 public class Document implements BaseIdObject<Long>{
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
-    String tittle;
+    @Column(nullable = false, columnDefinition = "TEXT")
+    String path;
 
+    @Column(nullable = false, length = 512)
+    String title;
+
+    @Column(nullable = false, name = "content_hash", length = 64)
+    String contentHash;
+
+    @Lob
+    @Column(nullable = false, columnDefinition = "TEXT")
     String content;
 
-    DocumentType type;
+    @Column(nullable = false, name = "added_at")
+    Instant addedAt;
+
+    @Column(nullable = false, name = "updated_at")
+    Instant updatedAt;
+
+    @PrePersist
+    public void prePersist() {
+        Instant now = Instant.now();
+        if(addedAt == null) addedAt = now;
+        updatedAt = now;
+    }
+
+    @PreUpdate
+    public void preUpdated() {
+        updatedAt = Instant.now();
+    }
 
     @Override
     public Long getId() {
