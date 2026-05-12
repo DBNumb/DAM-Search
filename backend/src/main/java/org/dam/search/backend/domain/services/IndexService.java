@@ -8,8 +8,10 @@ import org.dam.search.backend.domain.projections.ImportedDocument;
 import org.dam.search.backend.domain.repository.DocumentRepository;
 import org.dam.search.backend.domain.repository.TermDocKeyRepository;
 import org.dam.search.backend.domain.repository.TermRepository;
+import org.dam.search.backend.utils.TextNormalizer;
 import org.dam.search.backend.utils.Tokenizer;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
@@ -29,7 +31,7 @@ public class IndexService {
         this.documentService = documentService;
     }
 
-
+    @Transactional
     public Document upsertAndIndexDocument(ImportedDocument document) {
         Document entity = documentRepository.findByPath(document.getPath()).orElseGet(Document::new);
         entity.setTitle(document.getTitle());
@@ -58,7 +60,8 @@ public class IndexService {
     }
 
     private void recomputeDf() {
-        termRepository.deleteAllInBatch();
+        // Use regular delete to keep persistence context consistent during same transaction.
+        termRepository.deleteAll();
         Map<String, HashSet<Long>> seen = new HashMap<>();
         for (TermDocKey tdk : termDocKeyRepository.findAll()) {
             seen.computeIfAbsent(tdk.getId().getTermId(), k -> new HashSet<>()).add(tdk.getId().getDocumentId());
@@ -88,15 +91,18 @@ public class IndexService {
         return documentRepository.findAll();
     }
 
+    @Transactional
     public void reindexAll() {
         List<Document> docs = documentRepository.findAll();
         for (Document d : docs) {
-            try {
-                var imported = documentService.importDocument(java.nio.file.Path.of(d.getPath()));
-                upsertAndIndexDocument(imported);
-            } catch (Exception e) {
-
-            }
+            ImportedDocument imported = ImportedDocument.builder()
+                    .title(d.getTitle())
+                    .path(d.getPath())
+                    .contentHash(d.getContentHash())
+                    .rawText(d.getContent())
+                    .normalizedText(TextNormalizer.normalizeText(d.getContent()))
+                    .build();
+            upsertAndIndexDocument(imported);
         }
     }
 }

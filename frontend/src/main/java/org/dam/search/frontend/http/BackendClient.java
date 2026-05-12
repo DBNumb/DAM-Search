@@ -96,4 +96,43 @@ public class BackendClient {
         baos.write(end.getBytes(StandardCharsets.UTF_8));
         return baos.toByteArray();
     }
+
+    public boolean login(String username, String password) throws IOException, InterruptedException {
+        String body = Json.loginRequestBody(username, password);
+
+        HttpRequest req = HttpRequest.newBuilder(baseUri.resolve("/api/user/login"))
+                                     .header("Content-Type", "application/json")
+                                     .POST(HttpRequest.BodyPublishers.ofString(body))
+                                     .build();
+
+        HttpResponse<String> res = http.send(req, HttpResponse.BodyHandlers.ofString());
+
+        if (res.statusCode() == 200 || res.statusCode() == 401) {
+            return Json.extractBooleanData(res.body());
+        }
+        throw new IOException("Backend respondió " + res.statusCode());
+    }
+
+    public boolean register(String username, String password) throws IOException, InterruptedException {
+        String body = Json.userCreateBody(username, password);
+
+        HttpRequest req = HttpRequest.newBuilder(baseUri.resolve("/api/user/"))
+                                     .header("Content-Type", "application/json")
+                                     .POST(HttpRequest.BodyPublishers.ofString(body))
+                                     .build();
+
+        HttpResponse<String> res = http.send(req, HttpResponse.BodyHandlers.ofString());
+
+
+        if (res.statusCode() == 200 || res.statusCode() == 201) {
+            return true;
+        }
+
+
+        if (res.statusCode() == 400 || res.statusCode() == 409) {
+            return false;
+        }
+
+        throw new IOException("Backend respondió " + res.statusCode());
+    }
 }

@@ -14,6 +14,8 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.SVGPath;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 import javafx.geometry.Insets;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -24,7 +26,13 @@ import org.dam.search.frontend.model.SearchSelector;
 
 import java.io.File;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 public class SearchEngineUI {
@@ -37,6 +45,11 @@ public class SearchEngineUI {
 
     @FXML private ListView<DocumentDTO> docsList;
     @FXML private ListView<SearchResultDTO> resultsList;
+    @FXML private SplitPane mainContentSplit;
+    @FXML private VBox matchesPane;
+    @FXML private Label matchesTitleLabel;
+    @FXML private ListView<String> matchesListView;
+    @FXML private TextArea matchesTextArea;
     @FXML private Button searchButton;
     @FXML private ProgressIndicator progress;
     @FXML private TextArea previewArea;
@@ -50,6 +63,8 @@ public class SearchEngineUI {
 
         previewArea.setEditable(false);
         previewArea.setFocusTraversable(false);
+        matchesTextArea.setEditable(false);
+        matchesTextArea.setFocusTraversable(false);
 
         docsList.setCellFactory(lv -> new ListCell<>() {
             @Override
@@ -75,11 +90,31 @@ public class SearchEngineUI {
                     return;
                 }
                 setText(null);
-                setGraphic(resultCard(item.getTitle(), item.getSnippet(), item.getScore(), fileKind(item.getTitle(),null)));
+                setGraphic(resultCard(item));
             }
         });
 
+        docsList.getSelectionModel().selectedItemProperty().addListener((obs, oldDoc, newDoc) -> {
+            if (newDoc == null || newDoc.getId() == null) {
+                return;
+            }
+            loadPreview(newDoc.getId());
+        });
 
+        resultsList.getSelectionModel().selectedItemProperty().addListener((obs, oldResult, newResult) -> {
+            if (newResult == null) {
+                return;
+            }
+            loadPreview(newResult.getDocumentId());
+        });
+    }
+
+    @FXML
+    public void onBackFromMatches() {
+        matchesPane.setVisible(false);
+        matchesPane.setManaged(false);
+        mainContentSplit.setVisible(true);
+        mainContentSplit.setManaged(true);
     }
 
     @FXML
@@ -175,23 +210,35 @@ public class SearchEngineUI {
         row.setPadding(new Insets(10));
         return row;
     }
-    private static Node resultCard(String title, String snippet, double score, FileKind kind) {
+    private Node resultCard(SearchResultDTO result) {
+        String title = result.getTitle();
+        String snippet = result.getSnippet();
+        double score = result.getScore();
+        FileKind kind = fileKind(title, null);
+
         Node icon = fileIcon(kind);
         Label t = new Label(title);
         t.getStyleClass().add("card-title");
 
-        Label sn = new Label(shorten(snippet, 170));
-        sn.getStyleClass().add("card-snippet");
-        sn.setWrapText(true);
+        String shownSnippet = (snippet == null || snippet.isBlank())
+                ? "Sin fragmento disponible. Selecciona el resultado para abrir la vista previa."
+                : snippet;
+
+        TextFlow sn = buildSnippetFlow(shorten(shownSnippet, 340), queryField.getText());
 
         Label sc = new Label(String.format("%.4f", score));
         sc.getStyleClass().add("badge");
+
+        Hyperlink matchesLink = new Hyperlink("Ver coincidencias");
+        matchesLink.getStyleClass().add("link-lite");
+        matchesLink.setOnAction(e -> showMatchesWindow(result));
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
         HBox top = new HBox(8, t, spacer, sc);
-        VBox text = new VBox(6, top, sn);
+        HBox actions = new HBox(matchesLink);
+        VBox text = new VBox(6, top, sn, actions);
 
         HBox row = new HBox(10, icon, text);
         row.getStyleClass().add("card");
@@ -201,10 +248,156 @@ public class SearchEngineUI {
 
     private static String shorten(String snippet, int max) {
         if(snippet == null) return "";
-        String trimmed = snippet.replaceAll("\\+s"," ").trim();
-        if(snippet.length() <= max) return snippet;
-        return snippet.substring(0, max-1) + "...";
+        String trimmed = snippet.replaceAll("\\s+"," ").trim();
+        if(trimmed.length() <= max) return trimmed;
+        return trimmed.substring(0, max-1) + "...";
     }
+
+    private static TextFlow buildSnippetFlow(String snippet, String query) {
+        TextFlow flow = new TextFlow();
+        flow.getStyleClass().add("card-snippet-flow");
+
+        if (snippet == null || snippet.isBlank()) {
+            return flow;
+        }
+
+        List<String> terms = extractTerms(query);
+        if (terms.isEmpty()) {
+            Text plain = new Text(snippet);
+            plain.getStyleClass().add("card-snippet");
+            flow.getChildren().add(plain);
+            return flow;
+        }
+
+        String regex = "(?i)(" + String.join("|", terms.stream().map(Pattern::quote).toList()) + ")";
+        Matcher matcher = Pattern.compile(regex).matcher(snippet);
+
+        int last = 0;
+        while (matcher.find()) {
+            if (matcher.start() > last) {
+                Text plain = new Text(snippet.substring(last, matcher.start()));
+                plain.getStyleClass().add("card-snippet");
+                flow.getChildren().add(plain);
+            }
+
+            Text hit = new Text(snippet.substring(matcher.start(), matcher.end()));
+            hit.getStyleClass().add("snippet-hit");
+            flow.getChildren().add(hit);
+            last = matcher.end();
+        }
+
+        if (last < snippet.length()) {
+            Text plain = new Text(snippet.substring(last));
+            plain.getStyleClass().add("card-snippet");
+            flow.getChildren().add(plain);
+        }
+        return flow;
+    }
+
+    private static List<String> extractTerms(String query) {
+        if (query == null || query.isBlank()) {
+            return List.of();
+        }
+
+        String[] raw = query.toLowerCase().trim().split("\\s+");
+        Set<String> terms = new LinkedHashSet<>();
+        for (String t : raw) {
+            if (t != null && !t.isBlank() && t.length() > 1) {
+                terms.add(t);
+            }
+        }
+        return new ArrayList<>(terms);
+    }
+
+    private void showMatchesWindow(SearchResultDTO result) {
+        Task<String> task = new Task<>() {
+            @Override
+            protected String call() throws Exception {
+                return client.getDocumentContent(result.getDocumentId());
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+            String content = task.getValue();
+            List<String> contexts = buildMatchContexts(content, extractTerms(queryField.getText()), 140, 80);
+            showMatchesInSameView(result.getTitle(), content, contexts);
+        });
+
+        task.setOnFailed(e -> {
+            Throwable ex = task.getException();
+            String msg = ex == null ? "No se pudieron cargar coincidencias" : ex.getMessage();
+            setStatus("Error: " + msg, true);
+        });
+
+        Thread t = new Thread(task, "frontend-matches-worker");
+        t.setDaemon(true);
+        t.start();
+    }
+
+    private void showMatchesInSameView(String title, String content, List<String> contexts) {
+        matchesTitleLabel.setText("Coincidencias - " + title + " (" + contexts.size() + ")");
+        matchesListView.setItems(FXCollections.observableArrayList(contexts));
+        matchesListView.setPlaceholder(new Label("No hay coincidencias para la consulta actual."));
+        matchesListView.setCellFactory(lv -> new ListCell<>() {
+            private final Label label = new Label();
+            {
+                label.setWrapText(true);
+            }
+
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setGraphic(null);
+                    setText(null);
+                    return;
+                }
+                label.setText(item);
+                label.setMaxWidth(lv.getWidth() - 32);
+                setGraphic(label);
+                setText(null);
+            }
+        });
+        matchesTextArea.setText(content == null ? "" : content);
+
+        mainContentSplit.setVisible(false);
+        mainContentSplit.setManaged(false);
+        matchesPane.setVisible(true);
+        matchesPane.setManaged(true);
+    }
+
+    private static List<String> buildMatchContexts(String content, List<String> terms, int radius, int maxMatches) {
+        if (content == null || content.isBlank() || terms.isEmpty()) {
+            return List.of();
+        }
+
+        String lower = content.toLowerCase();
+        List<MatchHit> hits = new ArrayList<>();
+        for (String term : terms) {
+            String t = term.toLowerCase();
+            int from = 0;
+            while (true) {
+                int idx = lower.indexOf(t, from);
+                if (idx < 0) break;
+                hits.add(new MatchHit(idx, t));
+                from = idx + Math.max(1, t.length());
+            }
+        }
+
+        hits.sort(Comparator.comparingInt(MatchHit::index));
+        List<String> out = new ArrayList<>();
+        for (int i = 0; i < Math.min(maxMatches, hits.size()); i++) {
+            MatchHit hit = hits.get(i);
+            int start = Math.max(0, hit.index() - radius);
+            int end = Math.min(content.length(), hit.index() + hit.term().length() + radius);
+            String fragment = content.substring(start, end).replaceAll("\\s+", " ").trim();
+            String highlighted = fragment.replaceFirst("(?i)" + Pattern.quote(hit.term()), "[$0]");
+            out.add((start > 0 ? "..." : "") + highlighted + (end < content.length() ? "..." : ""));
+        }
+        return out;
+    }
+
+    private record MatchHit(int index, String term) {}
 
     private enum FileKind { PDF, DOCX, TXT, OTHER }
 
@@ -239,7 +432,14 @@ public class SearchEngineUI {
     private void refreshDocuments() {
         runBackground("Cargando documentos...", () -> {
             List<DocumentDTO> docs = client.listDocuments();
-            Platform.runLater(() -> docsList.setItems(FXCollections.observableArrayList(docs)));
+            Platform.runLater(() -> {
+                docsList.setItems(FXCollections.observableArrayList(docs));
+                if (!docs.isEmpty()) {
+                    docsList.getSelectionModel().selectFirst();
+                } else {
+                    previewArea.clear();
+                }
+            });
         }, () -> setStatus("Listo.", false));
     }
 
@@ -283,5 +483,28 @@ public class SearchEngineUI {
         if (error) statusLabel.setStyle("-fx-text-fill: #b00020;");
         else statusLabel.setStyle("");
     }
-}
 
+    private void loadPreview(long documentId) {
+        Task<String> task = new Task<>() {
+            @Override
+            protected String call() throws Exception {
+                return client.getDocumentContent(documentId);
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+            String content = task.getValue();
+            previewArea.setText(content == null ? "" : content);
+        });
+
+        task.setOnFailed(e -> {
+            Throwable ex = task.getException();
+            String msg = ex == null ? "Error cargando vista previa" : ex.getMessage();
+            setStatus("Error: " + msg, true);
+        });
+
+        Thread t = new Thread(task, "frontend-preview-worker");
+        t.setDaemon(true);
+        t.start();
+    }
+}

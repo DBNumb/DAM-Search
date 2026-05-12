@@ -10,7 +10,6 @@ public final class Json {
     private Json() {}
 
     public static List<DocumentDTO> parseDocuments(String json) {
-
         List<DocumentDTO> out = new ArrayList<>();
         for (String obj : splitObjects(json)) {
             long id = Long.parseLong(extractNumber(obj, "id"));
@@ -22,7 +21,6 @@ public final class Json {
     }
 
     public static List<SearchResultDTO> parseResults(String json) {
-        // Espera: [{"documentId":1,"title":"...","score":1.23,"snippet":"...","matchIndex":-1}, ...]
         List<SearchResultDTO> out = new ArrayList<>();
         for (String obj : splitObjects(json)) {
             long docId = Long.parseLong(extractNumber(obj, "documentId"));
@@ -36,8 +34,43 @@ public final class Json {
     }
 
     public static String extractContent(String jsonObj) {
-        // DocumentEntity serializa "content"
         return extractString(jsonObj, "content");
+    }
+
+    public static String loginRequestBody(String username, String password) {
+        return "{\"username\":\"" + escapeJson(username) + "\",\"password\":\"" + escapeJson(password) + "\"}";
+    }
+
+    public static String userCreateBody(String username, String password) {
+        return "{\"username\":\"" + escapeJson(username) + "\",\"password\":\"" + escapeJson(password) + "\"}";
+    }
+
+    public static boolean extractBooleanData(String jsonObj) {
+        String needle = "\"data\":";
+        int i = jsonObj.indexOf(needle);
+        if (i < 0) return false;
+        i += needle.length();
+        while (i < jsonObj.length() && Character.isWhitespace(jsonObj.charAt(i))) i++;
+        if (jsonObj.startsWith("true", i)) return true;
+        if (jsonObj.startsWith("false", i)) return false;
+        return false;
+    }
+
+    private static String escapeJson(String s) {
+        if (s == null) return "";
+        StringBuilder out = new StringBuilder();
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            switch (c) {
+                case '"' -> out.append("\\\"");
+                case '\\' -> out.append("\\\\");
+                case '\n' -> out.append("\\n");
+                case '\r' -> out.append("\\r");
+                case '\t' -> out.append("\\t");
+                default -> out.append(c);
+            }
+        }
+        return out.toString();
     }
 
     private static List<String> splitObjects(String jsonArray) {
@@ -51,7 +84,7 @@ public final class Json {
         boolean inStr = false;
         for (int i = 0; i < s.length(); i++) {
             char c = s.charAt(i);
-            if (c == '\"' && (i == 0 || s.charAt(i - 1) != '\\')) inStr = !inStr;
+            if (c == '"' && (i == 0 || s.charAt(i - 1) != '\\')) inStr = !inStr;
             if (inStr) continue;
             if (c == '{') {
                 if (depth == 0) start = i;
@@ -73,7 +106,7 @@ public final class Json {
         if (i < 0) return "";
         i += needle.length();
         while (i < obj.length() && Character.isWhitespace(obj.charAt(i))) i++;
-        if (i >= obj.length() || obj.charAt(i) != '\"') return "";
+        if (i >= obj.length() || obj.charAt(i) != '"') return "";
         i++;
         StringBuilder sb = new StringBuilder();
         boolean esc = false;
@@ -115,4 +148,3 @@ public final class Json {
         return obj.substring(i, j);
     }
 }
-

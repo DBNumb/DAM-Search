@@ -50,14 +50,46 @@ public class TfIdfService {
             long docId = rankedResults.get(i).getKey();
             double score = rankedResults.get(i).getValue();
             indexService.findDocumentById(docId).ifPresent(document -> {
+                String normalizedContent = TextNormalizer.normalizeText(document.getContent());
+                int matchIndex = firstMatchIndex(normalizedContent, uniqueTerms);
+                String snippet = buildSnippet(normalizedContent, matchIndex, 180);
+
                 results.add(SearchDTO.builder()
                                      .documentId(document.getId())
                                      .title(document.getTitle())
                                      .score(score)
-                                     .snippet("")
+                                     .snippet(snippet)
+                                     .matchIndex(matchIndex)
                                      .build());
             });
         }
         return results;
+    }
+
+    private static int firstMatchIndex(String content, Set<String> terms) {
+        if (content == null || content.isBlank()) return -1;
+        int best = Integer.MAX_VALUE;
+        for (String t : terms) {
+            int idx = content.indexOf(t);
+            if (idx >= 0 && idx < best) best = idx;
+        }
+        return best == Integer.MAX_VALUE ? -1 : best;
+    }
+
+    private static String buildSnippet(String content, int matchIndex, int maxLen) {
+        if (content == null || content.isBlank()) return "";
+        if (content.length() <= maxLen) return content;
+
+        int start;
+        if (matchIndex < 0) {
+            start = 0;
+        } else {
+            start = Math.max(0, matchIndex - (maxLen / 3));
+        }
+        int end = Math.min(content.length(), start + maxLen);
+
+        String prefix = start > 0 ? "..." : "";
+        String suffix = end < content.length() ? "..." : "";
+        return prefix + content.substring(start, end).trim() + suffix;
     }
 }
