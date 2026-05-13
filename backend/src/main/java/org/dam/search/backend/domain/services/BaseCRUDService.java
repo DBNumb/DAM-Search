@@ -7,7 +7,7 @@ import org.dam.search.backend.domain.repository.BaseRepository;
 import java.util.Objects;
 import java.util.Optional;
 
-public class BaseCRUDService<T extends BaseIdObject,ID> {
+public class BaseCRUDService<T extends BaseIdObject,ID> implements BaseService {
     private final BaseRepository<T,ID> repository;
 
     public BaseCRUDService(BaseRepository<T,ID> repository) {

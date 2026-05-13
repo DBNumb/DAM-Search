@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 
+import static org.dam.search.backend.utils.SnippetUtils.buildSnippet;
+
 @Service
 public class TfIdfService {
 
@@ -75,21 +77,5 @@ public class TfIdfService {
         }
         return best == Integer.MAX_VALUE ? -1 : best;
     }
-
-    private static String buildSnippet(String content, int matchIndex, int maxLen) {
-        if (content == null || content.isBlank()) return "";
-        if (content.length() <= maxLen) return content;
-
-        int start;
-        if (matchIndex < 0) {
-            start = 0;
-        } else {
-            start = Math.max(0, matchIndex - (maxLen / 3));
-        }
-        int end = Math.min(content.length(), start + maxLen);
-
-        String prefix = start > 0 ? "..." : "";
-        String suffix = end < content.length() ? "..." : "";
-        return prefix + content.substring(start, end).trim() + suffix;
-    }
 }
+
