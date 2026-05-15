@@ -1,16 +1,100 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ProgressIndicator?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<?import javafx.scene.control.Button?>
-<VBox alignment="CENTER" spacing="20.0" xmlns:fx="http://javafx.com/fxml"
-      fx:controller="org.dam.search.frontend.HelloController">
-  <padding>
-    <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
-  </padding>
-
-  <Label fx:id="welcomeText"/>
-  <Button text="Hello!" onAction="#onHelloButtonClick"/>
-</VBox>
+<BorderPane xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="org.dam.search.frontend.ui.SearchEngineUI"
+            styleClass="app-root">
+    <top>
+        <VBox spacing="10.0" styleClass="topbar">
+            <padding>
+                <Insets top="12.0" right="12.0" bottom="12.0" left="12.0"/>
+            </padding>
+            <HBox spacing="10.0" styleClass="toolbar-row">
+                <Label text="Motor:" styleClass="muted-label" />
+                <ComboBox fx:id="engineCombo" prefWidth="180.0" />
+                <TextField fx:id="queryField" promptText="Introduce la consulta" HBox.hgrow="ALWAYS" />
+                <Button fx:id="searchButton" text="Buscar" onAction="#onSearch" styleClass="primary" />
+                <ProgressIndicator fx:id="progress" visible="false" prefWidth="28.0" prefHeight="28.0" />
+            </HBox>
+            <HBox spacing="8.0" styleClass="toolbar-row">
+                <Button text="Importar PDF" onAction="#onLoadPdf" />
+                <Button text="Importar DOCX" onAction="#onLoadDocx" />
+                <Button text="Reindexar" onAction="#onReindexAll" />
+                <Button text="Eliminar seleccionado" onAction="#onRemoveSelected" />
+            </HBox>
+            <Label fx:id="statusLabel" text="Listo." styleClass="status" />
+        </VBox>
+    </top>
+    <center>
+        <StackPane>
+        <SplitPane fx:id="mainContentSplit" dividerPositions="0.30,0.68" styleClass="content-split">
+            <VBox spacing="8.0" styleClass="pane-card">
+                <padding>
+                    <Insets top="10.0" right="10.0" bottom="10.0" left="10.0"/>
+                </padding>
+                <Label text="Documentos" styleClass="pane-title" />
+                <ListView fx:id="docsList" VBox.vgrow="ALWAYS">
+                    <placeholder>
+                        <Label text="No hay documentos cargados." styleClass="placeholder-label" />
+                    </placeholder>
+                </ListView>
+            </VBox>
+            <VBox spacing="8.0" styleClass="pane-card">
+                <padding>
+                    <Insets top="10.0" right="10.0" bottom="10.0" left="10.0"/>
+                </padding>
+                <Label text="Resultados" styleClass="pane-title" />
+                <ListView fx:id="resultsList" VBox.vgrow="ALWAYS">
+                    <placeholder>
+                        <Label text="Haz una busqueda para ver coincidencias." styleClass="placeholder-label" />
+                    </placeholder>
+                </ListView>
+            </VBox>
+            <VBox spacing="8.0" styleClass="pane-card">
+                <padding>
+                    <Insets top="10.0" right="10.0" bottom="10.0" left="10.0"/>
+                </padding>
+                <Label text="Vista previa" styleClass="pane-title" />
+                <TextArea fx:id="previewArea" wrapText="true" VBox.vgrow="ALWAYS" />
+            </VBox>
+        </SplitPane>
+            <VBox fx:id="matchesPane" visible="false" managed="false" spacing="10.0" styleClass="content-split">
+                <padding>
+                    <Insets top="12.0" right="12.0" bottom="12.0" left="12.0"/>
+                </padding>
+                <HBox spacing="10.0" styleClass="toolbar-row">
+                    <Button text="Volver" onAction="#onBackFromMatches" />
+                    <Label fx:id="matchesTitleLabel" text="Coincidencias" styleClass="pane-title" />
+                </HBox>
+                <SplitPane orientation="VERTICAL" dividerPositions="0.40" VBox.vgrow="ALWAYS">
+                    <ListView fx:id="matchesListView" />
+                    <TextArea fx:id="matchesTextArea" wrapText="true" editable="false" />
+                </SplitPane>
+            </VBox>
+        </StackPane>
+    </center>
+    <bottom>
+        <HBox styleClass="footer-wrap" BorderPane.alignment="CENTER_LEFT">
+            <padding>
+                <Insets top="8.0" right="12.0" bottom="8.0" left="12.0"/>
+            </padding>
+            <Label fx:id="footerLabel" text="Sin resultados." styleClass="footer" />
+            <Label HBox.hgrow="ALWAYS" />
+        </HBox>
+    </bottom>
+</BorderPane>

@@ -1,7 +1,6 @@
 package org.dam.search.backend.utils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class Tokenizer {
@@ -16,7 +15,7 @@ public class Tokenizer {
                 continue;
             }
             String trimmedToken = token.trim();
-            if(!trimmedToken.isBlank() || trimmedToken.length() <= 1){
+            if(trimmedToken.isBlank() || trimmedToken.length() <= 1){
                 continue;
             }
             tokenizedText.add(trimmedToken);

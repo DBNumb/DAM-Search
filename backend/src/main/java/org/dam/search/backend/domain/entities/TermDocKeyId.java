@@ -17,7 +17,7 @@ import java.util.Objects;
 public class TermDocKeyId {
 
     @Column(nullable = false)
-    Long termId;
+    String termId;
     @Column(nullable = false)
     Long documentId;
 
@@ -31,6 +31,6 @@ public class TermDocKeyId {
 
     @Override
     public int hashCode() {
-        return Objects.hash(termId.hashCode(),documentId.hashCode());
+        return Objects.hash(termId, documentId);
     }
 }

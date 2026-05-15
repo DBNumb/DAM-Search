@@ -11,10 +11,9 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
-public class Term implements BaseIdObject<Long>{
+public class Term implements BaseIdObject<String>{
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
+    String id;
 
     @Column(nullable = false)
     String term;
@@ -23,12 +22,12 @@ public class Term implements BaseIdObject<Long>{
     int docFrecuency;
 
     @Override
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
     @Override
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 }
