@@ -60,7 +60,6 @@ public class IndexService {
     }
 
     private void recomputeDf() {
-        // Use regular delete to keep persistence context consistent during same transaction.
         termRepository.deleteAll();
         Map<String, HashSet<Long>> seen = new HashMap<>();
         for (TermDocKey tdk : termDocKeyRepository.findAll()) {

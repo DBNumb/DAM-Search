@@ -18,7 +18,5 @@ public class BaseListResponse<T> {
 
     String message;
 
-    public BaseListResponse(List<T> data) {
-        this.data = data;
-    }   
+
 }

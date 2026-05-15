@@ -411,7 +411,7 @@ public class SearchEngineUI {
     }
 
     private static Node fileIcon(FileKind kind) {
-        // Iconos simples en SVGPath para no depender de librerías extra.
+
         SVGPath svg = new SVGPath();
         svg.getStyleClass().addAll("file-icon");
         svg.setContent(switch (kind) {
